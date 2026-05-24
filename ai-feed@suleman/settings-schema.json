@@ -10,12 +10,12 @@
         "sources": {
             "type": "page",
             "title": "Sources",
-            "sections": ["github-source", "arxiv-source", "hn-source", "hf-source", "reddit-source"]
+            "sections": ["github-source", "arxiv-source", "hn-source", "hf-source"]
         },
         "filters": {
             "type": "page",
             "title": "Filters",
-            "sections": ["github-filters", "arxiv-filters", "hn-filters", "hf-filters", "reddit-filters"]
+            "sections": ["github-filters", "arxiv-filters", "hn-filters", "hf-filters"]
         },
         "appearance": {
             "type": "page",
@@ -35,7 +35,7 @@
         "order-section": {
             "type": "section",
             "title": "Source Display Order",
-            "keys": ["source-order-1", "source-order-2", "source-order-3", "source-order-4", "source-order-5"]
+            "keys": ["source-order-1", "source-order-2", "source-order-3", "source-order-4"]
         },
         "github-source": {
             "type": "section",
@@ -57,11 +57,6 @@
             "title": "HuggingFace",
             "keys": ["hf-enabled", "hf-count"]
         },
-        "reddit-source": {
-            "type": "section",
-            "title": "Reddit",
-            "keys": ["reddit-enabled", "reddit-count"]
-        },
         "github-filters": {
             "type": "section",
             "title": "GitHub",
@@ -81,11 +76,6 @@
             "type": "section",
             "title": "HuggingFace",
             "keys": ["hf-show-models", "hf-show-datasets", "hf-show-spaces"]
-        },
-        "reddit-filters": {
-            "type": "section",
-            "title": "Reddit",
-            "keys": ["reddit-subreddits", "reddit-sort"]
         },
         "colors-section": {
             "type": "section",
@@ -133,8 +123,7 @@
             "GitHub Trending": "github",
             "arXiv Papers": "arxiv",
             "Hacker News": "hackernews",
-            "HuggingFace": "huggingface",
-            "Reddit": "reddit"
+            "HuggingFace": "huggingface"
         },
         "description": "Position 1"
     },
@@ -145,8 +134,7 @@
             "GitHub Trending": "github",
             "arXiv Papers": "arxiv",
             "Hacker News": "hackernews",
-            "HuggingFace": "huggingface",
-            "Reddit": "reddit"
+            "HuggingFace": "huggingface"
         },
         "description": "Position 2"
     },
@@ -157,8 +145,7 @@
             "GitHub Trending": "github",
             "arXiv Papers": "arxiv",
             "Hacker News": "hackernews",
-            "HuggingFace": "huggingface",
-            "Reddit": "reddit"
+            "HuggingFace": "huggingface"
         },
         "description": "Position 3"
     },
@@ -169,22 +156,9 @@
             "GitHub Trending": "github",
             "arXiv Papers": "arxiv",
             "Hacker News": "hackernews",
-            "HuggingFace": "huggingface",
-            "Reddit": "reddit"
+            "HuggingFace": "huggingface"
         },
         "description": "Position 4"
-    },
-    "source-order-5": {
-        "type": "combobox",
-        "default": "reddit",
-        "options": {
-            "GitHub Trending": "github",
-            "arXiv Papers": "arxiv",
-            "Hacker News": "hackernews",
-            "HuggingFace": "huggingface",
-            "Reddit": "reddit"
-        },
-        "description": "Position 5"
     },
     "github-enabled": { "type": "switch", "default": true, "description": "Enable GitHub Trending" },
     "github-count": { "type": "spinbutton", "default": 3, "min": 1, "max": 15, "step": 1, "description": "Items to show" },
@@ -194,8 +168,6 @@
     "hn-count": { "type": "spinbutton", "default": 3, "min": 1, "max": 15, "step": 1, "description": "Items to show" },
     "hf-enabled": { "type": "switch", "default": true, "description": "Enable HuggingFace" },
     "hf-count": { "type": "spinbutton", "default": 3, "min": 1, "max": 15, "step": 1, "description": "Items to show" },
-    "reddit-enabled": { "type": "switch", "default": true, "description": "Enable Reddit" },
-    "reddit-count": { "type": "spinbutton", "default": 5, "min": 1, "max": 15, "step": 1, "description": "Items to show" },
     "github-period": {
         "type": "combobox",
         "default": "daily",
@@ -216,13 +188,6 @@
     "hf-show-models": { "type": "switch", "default": true, "description": "Show models" },
     "hf-show-datasets": { "type": "switch", "default": true, "description": "Show datasets" },
     "hf-show-spaces": { "type": "switch", "default": false, "description": "Show spaces" },
-    "reddit-subreddits": { "type": "textview", "default": "MachineLearning\nLocalLLaMA\nartificial\nsingularity", "description": "Subreddits (one per line)" },
-    "reddit-sort": {
-        "type": "combobox",
-        "default": "hot",
-        "options": { "Hot": "hot", "New": "new", "Top": "top" },
-        "description": "Sort by"
-    },
     "background-color": { "type": "colorchooser", "default": "rgba(28,28,32,0.92)", "description": "Background color" },
     "font-color": { "type": "colorchooser", "default": "rgba(230,230,235,0.95)", "description": "Text color" },
     "accent-color": { "type": "colorchooser", "default": "rgba(160,180,210,0.85)", "description": "Accent color" },

@@ -21,30 +21,26 @@ const GitHubSource = imports.sources.github;
 const ArXivSource = imports.sources.arxiv;
 const HNSource = imports.sources.hackernews;
 const HFSource = imports.sources.huggingface;
-const RedditSource = imports.sources.reddit;
 
 const SOURCE_ICONS = {
     github: '◆',
     arxiv: '◇',
     hackernews: '●',
-    huggingface: '◈',
-    reddit: '◉'
+    huggingface: '◈'
 };
 
 const SOURCE_LABELS = {
     github: 'GitHub Trending',
     arxiv: 'arXiv Papers',
     hackernews: 'Hacker News',
-    huggingface: 'HuggingFace',
-    reddit: 'Reddit'
+    huggingface: 'HuggingFace'
 };
 
 const SOURCE_FETCHERS = {
     github: GitHubSource,
     arxiv: ArXivSource,
     hackernews: HNSource,
-    huggingface: HFSource,
-    reddit: RedditSource
+    huggingface: HFSource
 };
 
 function AIFeedDesklet(metadata, deskletId) {
@@ -89,7 +85,6 @@ AIFeedDesklet.prototype = {
         bind('source-order-2', 'sourceOrder2');
         bind('source-order-3', 'sourceOrder3');
         bind('source-order-4', 'sourceOrder4');
-        bind('source-order-5', 'sourceOrder5');
         bind('github-enabled', 'githubEnabled');
         bind('github-count', 'githubCount');
         bind('arxiv-enabled', 'arxivEnabled');
@@ -98,8 +93,6 @@ AIFeedDesklet.prototype = {
         bind('hn-count', 'hnCount');
         bind('hf-enabled', 'hfEnabled');
         bind('hf-count', 'hfCount');
-        bind('reddit-enabled', 'redditEnabled');
-        bind('reddit-count', 'redditCount');
         bind('github-period', 'githubPeriod');
         bind('github-languages', 'githubLanguages');
         bind('arxiv-categories', 'arxivCategories');
@@ -110,8 +103,6 @@ AIFeedDesklet.prototype = {
         bind('hf-show-models', 'hfShowModels');
         bind('hf-show-datasets', 'hfShowDatasets');
         bind('hf-show-spaces', 'hfShowSpaces');
-        bind('reddit-subreddits', 'redditSubreddits');
-        bind('reddit-sort', 'redditSort');
         bind('background-color', 'backgroundColor');
         bind('font-color', 'fontColor');
         bind('accent-color', 'accentColor');
@@ -141,20 +132,40 @@ AIFeedDesklet.prototype = {
         }
     },
 
+    _fs: function(base) {
+        let scale = this.fontScale || 1.0;
+        return 'font-size: ' + Math.round(base * scale) + 'px;';
+    },
+
     _buildUI: function() {
         let width = this.deskletWidth || 400;
+        let height = this.deskletHeight || 500;
         let scale = this.fontScale || 1.0;
 
         this._rootBox = new St.BoxLayout({
             vertical: true,
             style_class: 'feed-root',
             style: 'width: ' + width + 'px;'
+                + 'height: ' + height + 'px;'
                 + 'background-color: ' + (this.backgroundColor || 'rgba(28,28,32,0.92)') + ';'
                 + 'border-radius: 8px;'
-                + 'font-size: ' + Math.round(13 * scale) + 'px;'
+                + this._fs(13)
         });
 
         this._buildHeader();
+
+        // Single outer scroll wrapping all source sections so deskletHeight caps total
+        let headerAllowance = Math.round(50 * scale);
+        let scrollHeight = Math.max(100, height - headerAllowance);
+        let outerScroll = new St.ScrollView({
+            style_class: 'feed-outer-scroll',
+            hscrollbar_policy: St.PolicyType.NEVER,
+            vscrollbar_policy: St.PolicyType.AUTOMATIC
+        });
+        outerScroll.set_height(scrollHeight);
+
+        let contentBox = new St.BoxLayout({ vertical: true });
+        outerScroll.add_actor(contentBox);
 
         this._sourceSections = {};
         let sourceOrder = this._getSourceOrder();
@@ -162,8 +173,10 @@ AIFeedDesklet.prototype = {
             if (!this._isSourceEnabled(source)) return;
             let section = this._buildSourceSection(source);
             this._sourceSections[source] = section;
-            this._rootBox.add(section.container);
+            contentBox.add(section.container);
         });
+
+        this._rootBox.add(outerScroll, { expand: true });
 
         this.setContent(this._rootBox);
     },
@@ -179,7 +192,9 @@ AIFeedDesklet.prototype = {
             text: '◆ AI FEED',
             style_class: 'feed-header-title',
             style: 'color: ' + (this.headerColor || 'rgba(160,180,210,0.85)') + ';'
+                + this._fs(14)
         });
+        titleLabel.clutter_text.set_ellipsize(3);
         headerBox.add(titleLabel, { expand: true, x_fill: true });
 
         this._updatedLabel = new St.Label({
@@ -187,6 +202,7 @@ AIFeedDesklet.prototype = {
             style_class: 'feed-header-updated',
             style: 'color: ' + (this.accentColor || 'rgba(160,180,210,0.5)') + ';'
                 + 'padding-right: 8px;'
+                + this._fs(11)
         });
         headerBox.add(this._updatedLabel);
 
@@ -194,6 +210,7 @@ AIFeedDesklet.prototype = {
             label: '↻',
             style_class: 'feed-header-btn',
             style: 'color: ' + (this.accentColor || 'rgba(160,180,210,0.7)') + ';'
+                + this._fs(14)
         });
         refreshBtn.connect('clicked', () => {
             this._cancelTimer();
@@ -202,18 +219,23 @@ AIFeedDesklet.prototype = {
         headerBox.add(refreshBtn);
 
         let bookmarkBtn = new St.Button({
-            label: '✳',
+            label: '★',
             style_class: 'feed-header-btn',
             style: 'color: ' + (this.accentColor || 'rgba(160,180,210,0.7)') + ';'
-                + 'padding-left: 4px;'
+                + 'padding-left: 6px;'
+                + this._fs(14)
         });
         bookmarkBtn.connect('clicked', () => {
-            let dialog = new BookmarksDialog.BookmarksDialog(this._bookmarkStore, {
-                background: this.backgroundColor,
-                font: this.fontColor,
-                accent: this.accentColor
-            });
-            dialog.open();
+            try {
+                let dialog = new BookmarksDialog.BookmarksDialog(this._bookmarkStore, {
+                    background: this.backgroundColor,
+                    font: this.fontColor,
+                    accent: this.accentColor
+                });
+                dialog.open();
+            } catch (e) {
+                global.logError('[AIFeed] Bookmark dialog failed: ' + e.message + '\n' + e.stack);
+            }
         });
         headerBox.add(bookmarkBtn);
 
@@ -233,25 +255,14 @@ AIFeedDesklet.prototype = {
             text: icon + ' ' + label,
             style_class: 'source-header',
             style: 'color: ' + (this.accentColor || 'rgba(160,180,210,0.85)') + ';'
+                + this._fs(11)
         });
         container.add(header);
 
-        let scrollView = new St.ScrollView({
-            style_class: 'source-scroll',
-            hscrollbar_policy: St.PolicyType.NEVER,
-            vscrollbar_policy: St.PolicyType.AUTOMATIC,
-            style: 'border: 1px solid rgba(160,180,210,0.1);'
-        });
-
-        let count = this._getSourceCount(source);
-        let itemHeight = Math.round(38 * (this.fontScale || 1.0));
-        scrollView.set_height(count * itemHeight);
-
         let itemBox = new St.BoxLayout({ vertical: true });
-        scrollView.add_actor(itemBox);
-        container.add(scrollView);
+        container.add(itemBox);
 
-        return { container: container, itemBox: itemBox, scrollView: scrollView };
+        return { container: container, itemBox: itemBox };
     },
 
     _populateSource: function(source, items) {
@@ -265,6 +276,7 @@ AIFeedDesklet.prototype = {
                 text: 'No data available',
                 style_class: 'source-unavailable',
                 style: 'color: ' + (this.accentColor || 'rgba(160,180,210,0.4)') + ';'
+                    + this._fs(11)
             });
             section.itemBox.add(unavail);
             return;
@@ -284,6 +296,7 @@ AIFeedDesklet.prototype = {
                 text: item.title || '',
                 style_class: 'item-title',
                 style: 'color: ' + (this.fontColor || 'rgba(230,230,235,0.95)') + ';'
+                    + this._fs(12)
             });
             titleLabel.clutter_text.set_ellipsize(3);
             topLine.add(titleLabel, { expand: true, x_fill: true });
@@ -297,6 +310,7 @@ AIFeedDesklet.prototype = {
                     style_class: 'item-meta',
                     style: 'color: ' + (this.accentColor || 'rgba(160,180,210,0.5)') + ';'
                         + 'padding-left: 8px;'
+                        + this._fs(10)
                 });
                 topLine.add(metaLabel);
             }
@@ -306,6 +320,7 @@ AIFeedDesklet.prototype = {
                 label: bmIcon,
                 style_class: 'item-bookmark-btn',
                 style: 'color: ' + (this.accentColor || 'rgba(160,180,210,0.5)') + ';'
+                    + this._fs(12)
             });
             bmBtn.connect('clicked', () => {
                 if (this._bookmarkStore.has(item.url)) {
@@ -330,8 +345,6 @@ AIFeedDesklet.prototype = {
                 bottomText = item.meta + '  ' + (item.extra.timeAgo || '');
             } else if (source === 'huggingface' && item.extra) {
                 bottomText = item.extra.type || '';
-            } else if (source === 'reddit' && item.extra) {
-                bottomText = (item.extra.subreddit || '') + '  ' + item.meta;
             }
 
             if (bottomText) {
@@ -339,6 +352,7 @@ AIFeedDesklet.prototype = {
                     text: bottomText,
                     style_class: 'item-subtitle',
                     style: 'color: ' + (this.accentColor || 'rgba(160,180,210,0.4)') + ';'
+                        + this._fs(10)
                 });
                 subLabel.clutter_text.set_ellipsize(3);
                 row.add(subLabel);
@@ -364,12 +378,11 @@ AIFeedDesklet.prototype = {
             this.sourceOrder1 || 'github',
             this.sourceOrder2 || 'arxiv',
             this.sourceOrder3 || 'hackernews',
-            this.sourceOrder4 || 'huggingface',
-            this.sourceOrder5 || 'reddit'
+            this.sourceOrder4 || 'huggingface'
         ];
         let seen = {};
         let result = [];
-        let defaults = ['github', 'arxiv', 'hackernews', 'huggingface', 'reddit'];
+        let defaults = ['github', 'arxiv', 'hackernews', 'huggingface'];
         order.forEach((s) => {
             if (!seen[s]) { seen[s] = true; result.push(s); }
         });
@@ -384,8 +397,7 @@ AIFeedDesklet.prototype = {
             github: this.githubEnabled,
             arxiv: this.arxivEnabled,
             hackernews: this.hnEnabled,
-            huggingface: this.hfEnabled,
-            reddit: this.redditEnabled
+            huggingface: this.hfEnabled
         };
         return map[source] !== false;
     },
@@ -395,8 +407,7 @@ AIFeedDesklet.prototype = {
             github: this.githubCount,
             arxiv: this.arxivCount,
             hackernews: this.hnCount,
-            huggingface: this.hfCount,
-            reddit: this.redditCount
+            huggingface: this.hfCount
         };
         return map[source] || 3;
     },

@@ -37,7 +37,7 @@ function _toFeedItem(item, type) {
             type: type,
             downloads: item.downloads || 0
         },
-        // Keep raw likes for sorting; stripped before returning to caller
+        _trending: item.trendingScore || 0,
         _likes: item.likes || 0
     };
 }
@@ -103,11 +103,15 @@ var fetch = function(httpClient, settings, callback) {
             return;
         }
 
-        // Sort by likes descending, take top N, strip internal _likes field
-        allItems.sort(function(a, b) { return b._likes - a._likes; });
+        // Sort by trendingScore desc (fall back to likes if tied); take top N
+        allItems.sort(function(a, b) {
+            if (b._trending !== a._trending) return b._trending - a._trending;
+            return b._likes - a._likes;
+        });
         let topItems = allItems.slice(0, count);
         for (let i = 0; i < topItems.length; i++) {
             delete topItems[i]._likes;
+            delete topItems[i]._trending;
         }
 
         callback(null, topItems);
@@ -116,7 +120,7 @@ var fetch = function(httpClient, settings, callback) {
     for (let i = 0; i < types.length; i++) {
         (function(typeObj) {
             let url = BASE_URL + '/' + typeObj.endpoint
-                + '?sort=likes&limit=' + count;
+                + '?sort=trendingScore&direction=-1&limit=' + count;
             httpClient.getJson(url, headers, function(error, status, data) {
                 onRequestDone(error, status, data, typeObj.label);
             });

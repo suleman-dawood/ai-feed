@@ -86,9 +86,7 @@ var BookmarksDialog = class BookmarksDialog {
 
         // --- Scroll view ---
         let scrollView = new St.ScrollView({
-            style: 'height: 350px;',
-            x_fill: true,
-            y_fill: true
+            style: 'height: 350px; min-width: 480px;'
         });
         scrollView.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
 
@@ -100,12 +98,12 @@ var BookmarksDialog = class BookmarksDialog {
         this._dialog.contentLayout.add_child(this._searchEntry);
         this._dialog.contentLayout.add_child(scrollView);
 
-        // Close button
-        this._dialog.addButton({
+        // Close button — use setButtons for Cinnamon compatibility
+        this._dialog.setButtons([{
             label: 'Close',
             action: () => this.close(),
             key: Clutter.KEY_Escape
-        });
+        }]);
 
         // Populate list
         this._rebuildList('');

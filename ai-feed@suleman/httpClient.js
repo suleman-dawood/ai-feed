@@ -8,7 +8,7 @@ const Soup = imports.gi.Soup;
 var HttpClient = class HttpClient {
     constructor(userAgent, timeout) {
         this._session = new Soup.SessionAsync();
-        this._session.user_agent = userAgent || 'Mozilla/5.0 (X11; Linux x86_64) AIFeed/1.0';
+        this._session.user_agent = userAgent || 'linux:ai-feed-desklet:1.0 (by /u/cinnamon-user)';
         this._session.timeout = timeout || 15;
     }
 
