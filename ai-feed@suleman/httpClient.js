@@ -2,6 +2,7 @@
 // Single Soup.SessionAsync instance, reused for all requests
 // Configurable User-Agent and timeout
 
+imports.gi.versions.Soup = '2.4';
 const Soup = imports.gi.Soup;
 
 var HttpClient = class HttpClient {
